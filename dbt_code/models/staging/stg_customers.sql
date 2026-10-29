@@ -1,7 +1,7 @@
 with source_data as (
     select
         *
-    from {{ source('raw', 'customers') }}
+    from {{ source('raw_data', 'customers') }}
 ),
 
 cleaned as (

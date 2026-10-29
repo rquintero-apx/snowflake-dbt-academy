@@ -1,0 +1,46 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "03 - Unpacking Semi-Structured JSON (stg_web_events)",
+  "steps": [
+    {
+      "file": "snowflake-dbt-academy/legacy_code/web_event_sample.json",
+      "line": 2,
+      "description": "### 📦 Columna Semi-estructurada VARIANT\nLos eventos web llegan en crudo dentro de una columna tipo `VARIANT` (`payload`) en Snowflake. Contiene atributos raíz heterogéneos y objetos anidados (`device`, `utm`)."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_web_events.sql",
+      "line": 3,
+      "description": "### 🔗 Declarative Ingestion\nLeemos la tabla de eventos crudos mediante Jinja `{{ source('raw_data', 'web_events') }}` manteniendo el principio de desacoplamiento de ambientes."
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/web_event_sample.json",
+      "line": 8,
+      "description": "### 🔍 Raíz: Atributos Transaccionales\nCampos de nivel superior como `event_type`, `user_id` y atributos opcionales de carritos/órdenes (`product_id`, `quantity`, `total`)."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_web_events.sql",
+      "line": 18,
+      "description": "### 🎯 Snowflake Colon Path & Strict Casting\nUsamos la notación de dos puntos (`:`) de Snowflake junto al doble colon (`::`) para extraer y tipar estrictamente cada propiedad:\n- `payload:user_id::integer`\n- `payload:total::decimal(10,2)`\nEsto evita que los campos queden como variantes genéricos en capas intermedias."
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/web_event_sample.json",
+      "line": 3,
+      "description": "### 📱 Objeto Anidado: Dispositivo\nEl objeto `device` agrupa `type`, `browser` y `os` en una estructura anidada."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_web_events.sql",
+      "line": 23,
+      "description": "### 🔓 Desempaquetado de Sub-Objetos\nNavegamos niveles múltiples en Snowflake usando dos puntos sucesivos:\n- `payload:device:type::string as device_type`\n- `payload:device:browser::string as browser`\n- `payload:device:os::string as os`"
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/web_event_sample.json",
+      "line": 10,
+      "description": "### 📈 Tracking de Marketing: UTM Tags\nLos parámetros de campaña (`utm`) son opcionales y pueden venir nulos en eventos orgánicos."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_web_events.sql",
+      "line": 28,
+      "description": "### 🛡️ Extracción Segura de Tags Nullable\nExtraemos `payload:utm:source::string as utm_source`. Snowflake maneja automáticamente los valores ausentes asignando `NULL` sin que la consulta falle por campos faltantes."
+    }
+  ]
+}

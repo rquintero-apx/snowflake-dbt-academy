@@ -1,0 +1,41 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "02 - Isolating Financial Transactions (stg_payments)",
+  "steps": [
+    {
+      "file": "snowflake-dbt-academy/legacy_code/step2_orderpayments.sql",
+      "line": 29,
+      "description": "### 🛑 Anti-patrón: Premature Join\nEl script monolítico ejecutaba un `LEFT JOIN raw.public.payments` prematuro contra órdenes. Si una orden registraba múltiples pagos, provocaba duplicación de filas (*fan-out*) y acoplaba dos dominios de negocio distintos."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_payments.sql",
+      "line": 4,
+      "description": "### 💳 Payment Entity Isolation & Materialization\nDesacoplamos la entidad aislando las transacciones financieras en su propio modelo atómico de staging mediante `{{ source('raw_ecommerce', 'payments') }}`. Compila como una vista liviana en `ANALYTICS.STAGING.STG_PAYMENTS`."
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/step2_orderpayments.sql",
+      "line": 25,
+      "description": "### ⚠️ Legacy: Normalización Mezclada\nEn el SQL viejo se procesaban variaciones de métodos de pago en el mismo query junto a campos de órdenes (`o.*`), ensuciando la granularidad de la capa base."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_payments.sql",
+      "line": 14,
+      "description": "### 🔄 Method Normalization\nEstandarizamos variantes legadas como `'cc'` y `'credit_card'` a un único estándar canónico (`'credit_card'`), y `'wire'` / `'bank_transfer'` a `'bank_transfer'` de manera controlada."
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/step2_orderpayments.sql",
+      "line": 18,
+      "description": "### ⚠️ Legacy: Falta de Precisión Decimal y Manejo de Nulos\nSe aplicaba un `COALESCE(p.amount, 0)` genérico sin controlar los tipos de datos numéricos ni la precisión contable."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_payments.sql",
+      "line": 17,
+      "description": "### 💰 Financial Precision & Refund Tracking\n1. **Financial Precision:** Forzamos casteo explícito con `amount::decimal(10, 2)` para evitar distorsiones por redondeo de números de punto flotante.\n2. **Refund Tracking:** Mantenemos montos negativos y transacciones de reembolso sin eliminarlas prematuramente, garantizando conciliación de auditoría completa."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_payments.sql",
+      "line": 23,
+      "description": "### 🧱 Pivoting Foundation\nAl mantener `stg_payments` en su nivel de grano transaccional puro, sentamos la base para que en capas posteriores (*intermediate* o *marts*) se pivoteen dinámicamente los montos por método de pago usando macros Jinja."
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "02 - Decoupling the Premature Join (stg_orders)",
+  "steps": [
+    {
+      "file": "snowflake-dbt-academy/legacy_code/step2_orderpayments.sql",
+      "line": 29,
+      "description": "### 🛑 Anti-patrón: Premature Join & Entity Coupling\nEl script original ejecutaba un `LEFT JOIN raw.public.payments` directo sobre órdenes. Esto mezclaba dos entidades distintas en la capa base y provocaba duplicación de órdenes ante pagos múltiples."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_orders.sql",
+      "line": 4,
+      "description": "### 📦 Complete Decoupling & Materialization\nAislamos el dominio de órdenes usando `{{ source('raw_data', 'orders') }}` sin ningún join secundario. Compila como una vista liviana en `ANALYTICS.STAGING.STG_ORDERS`."
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/step2_orderpayments.sql",
+      "line": 6,
+      "description": "### ⚠️ Legacy: Tipos Implícitos\nLos campos `order_id`, `customer_id` y `order_date` se leían directamente sin casteo explícito para Snowflake."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_orders.sql",
+      "line": 11,
+      "description": "### 🎯 Strict Data Types\n1. **Integer casting:** `order_id::integer`, `customer_id::integer`.\n2. **Date casting:** `order_date::date` para descartar horas residuales no deseadas."
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/step2_orderpayments.sql",
+      "line": 16,
+      "description": "### 🔄 Status Normalization\nEn el query monolítico se normalizaban múltiples estados. Conservamos la homologación de negocio (`completed`, `in_transit`, `open`, `cancelled`) dentro de este modelo base."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_orders.sql",
+      "line": 19,
+      "description": "### 🚚 String Sanitization\nLimpiamos espacios en blanco y convertimos a minúsculas la columna `shipping_method` con `lower(trim(...))` para garantizar uniones seguras downstream."
+    },
+    {
+      "file": "snowflake-dbt-academy/legacy_code/step2_orderpayments.sql",
+      "line": 32,
+      "description": "### 🛑 Anti-patrón: Premature Filter\nEl filtro de fechas o la eliminación de registros incompletos en la capa legacy borra eventos reales de auditoría."
+    },
+    {
+      "file": "snowflake-dbt-academy/dbt_code/models/staging/stg_orders.sql",
+      "line": 24,
+      "description": "### 🛡️ Audit Preservation\nEn staging no aplicamos cláusulas `WHERE` destructivas que eliminen estados cancelados. Se conserva el 100% de los registros para que los reportes de retención y cancelación tengan datos completos."
+    }
+  ]
+}

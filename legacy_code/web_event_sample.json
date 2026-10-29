@@ -1,0 +1,16 @@
+{
+  "_nota": "Este JSON está almacenado en Snowflake en la columna VARIANT PAYLOAD de raw.public.web_events. VARIANT es una columna que puede guardar datos JSON aunque tengan distintas estructuras.",
+  "device": {
+    "browser": "Chrome",
+    "os": "Windows",
+    "type": "desktop"
+  },
+  "event_type": "page_view",
+  "page": "/products/101",
+  "user_id": 1,
+  "utm": {
+    "campaign": "summer_sale",
+    "medium": "cpc",
+    "source": "google"
+  }
+}
