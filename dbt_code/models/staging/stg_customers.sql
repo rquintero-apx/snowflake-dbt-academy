@@ -4,6 +4,10 @@ with source_data as (
     from {{ source('raw_data', 'customers') }}
 ),
 
+country_map as (
+    select * from {{ ref('country_mapping') }}
+),
+
 cleaned as (
     select
         customer_id::integer as customer_id,
@@ -12,8 +16,12 @@ cleaned as (
         trim(lower(email)) as email,
         coalesce(trim(phone), 'N/A') as phone_number,
         trim(upper(country)) as country_code,
+        coalesce(cm.country_code, trim(upper(s.country))) as country_standardized,
         created_at::timestamp_ntz as created_at
-    from source_data
+    from source_data s
+    left join country_map cm
+        on trim(upper(s.country)) = upper(cm.country_raw)
+    
     where created_at is not null
       and email is not null
       and email like '%@%'
