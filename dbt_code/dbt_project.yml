@@ -38,10 +38,10 @@ models:
       +materialized: view
       +schema: staging
     intermediate:
-      +materialized: table
-    marts:
-      +materialized: table
-      +schema: marts
+      +materialized: view
+    # marts:
+    #   +materialized: table
+    #   +schema: marts
 seeds:
   dbt_code:
     +schema: staging

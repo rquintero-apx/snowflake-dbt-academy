@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Cleaned and deduplicated customers. One row per unique email, keeping the most recent record.
+    columns:
+      - name: customer_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: Lowercased, trimmed email address.
+        tests:
+          - unique
+          - not_null
+      - name: country_standardized
+        description: Standardized country code via seed mapping.
+
+  - name: stg_orders
+    description: Orders with standardized status values.
+    columns:
+      - name: order_id
+        description: "{{ doc('order_id') }}"
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: order_status
+        tests:
+          - accepted_values:
+              values: ['completed', 'in_transit', 'open', 'cancelled', 'other']
+
